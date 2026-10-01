@@ -1,20 +1,14 @@
 {
-  "name": "Solar Panel Calculator",
-  "short_name": "SolarCalc",
-  "description": "Calculate solar panel power, yield and CO2 savings. Supports 13 languages.",
-  "start_url": "/Solar-Calculator/index.html",
-  "scope": "/Solar-Calculator/",
-  "display": "standalone",
-  "background_color": "#0B2B40",
-  "theme_color": "#0B2B40",
-  "orientation": "any",
-  "lang": "en",
+  "id": "bracque007.lighting-buro-v1",
+  "name": "LightingBuro - Lighting Calculator",
+  "short_name": "LightingBuro",
+  "description": "Professional lighting calculator...",
+  ...
   "icons": [
     {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "icon-192.png",     ← LOKAAL! Geen https://
+      "sizes": "192x192",
+      ...
     }
   ]
 }
