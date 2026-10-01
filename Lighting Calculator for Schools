@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LightingBuro School Edition | Lighting Calculator for Schools</title>
+
+<!-- PWA Meta Tags -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B2B40">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="School Lighting">
+<meta name="description" content="Free lighting calculator for schools. Calculate energy consumption, costs and CO₂ emissions of school lighting installations.">
+<link rel="icon" type="image/png" href="icon-512.png">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #0B2B40;
+    --primary-light: #1F4B66;
+    --accent: #FFD966;
+    --accent-hover: #FFE89A;
+    --success: #1F7B4D;
+    --success-hover: #2A965F;
+    --school: #4A90E2;
+    --bg: #F1F5F9;
+    --card-bg: #FFFFFF;
+    --panel-bg: #F8FAFC;
+    --border: #DEE7EF;
+    --text: #0B2B40;
+    --text-light: #5B7E9C;
+    --slider-bg: #D0E0ED;
+    --slider-fg: #2C7DA0;
+    --result-bg: #F2F9FF;
+    --result-border: #BFDDF2;
+  }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .app-container {
+    max-width: 1420px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(11, 43, 64, 0.12);
+    overflow: hidden;
+    border: 1px solid #CBD5E1;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--primary);
+    padding: 18px 30px 14px;
+    color: white;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-brand .logo-img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px;
+  }
+
+  .header-brand h1 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .header-brand p {
+    font-size: 12px;
+    color: #CBD5E1;
+    margin-top: 2px;
+  }
+
+  .school-badge {
+    display: inline-block;
+    background: var(--school);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  .lang-buttons {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+
+  .lang-btn {
+    background: var(--primary-light);
+    color: #A0C6E0;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 34px;
+    font-family: inherit;
+  }
+
+  .lang-btn:hover { background: #2A5A7A; color: white; }
+  .lang-btn.active { background: var(--accent); color: var(--primary); }
+
+  .header-info {
+    display: flex;
+    gap: 28px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+
+  .header-info-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #CBD5E1;
+  }
+
+  .header-info-item .value { color: white; font-weight: 600; }
+  .header-info-item .value.empty { color: #7A8FA3; font-style: italic; }
+
+  /* CONTENT LAYOUT */
+  .content { display: flex; min-height: 700px; }
+
+  .left-panel {
+    width: 440px;
+    min-width: 440px;
+    background: var(--panel-bg);
+    padding: 25px;
+    overflow-y: auto;
+    max-height: 80vh;
+    border-right: 1px solid var(--border);
+  }
+
+  .right-panel {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    max-height: 80vh;
+    background: var(--card-bg);
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #2C5F7B;
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+
+  .section-title:first-child { margin-top: 0; }
+
+  .info-block {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px 18px;
+    margin-bottom: 5px;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .field-row:last-child { margin-bottom: 0; }
+
+  .field-row label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1E3A5F;
+    width: 130px;
+    min-width: 130px;
+  }
+
+  .field-row input,
+  .field-row select {
+    flex: 1;
+    padding: 8px 10px;
+    border: 2px solid #CDDCEC;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+    background: white;
+    transition: border-color 0.2s;
+    outline: none;
+    min-width: 0;
+  }
+
+  .field-row input:focus,
+  .field-row select:focus { border-color: var(--slider-fg); }
+
+  .field-row input::placeholder { color: #A9BCCD; font-style: italic; }
+
+  /* SCHOOL ROOMS SECTION */
+  .rooms-title {
+    background: linear-gradient(135deg, #E8F2FC 0%, #D6E8F7 100%);
+    border: 2px solid #A9CCE8;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rooms-title h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1A4A6B;
+    flex: 1;
+  }
+
+  .rooms-title .free-badge {
+    background: var(--success);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .room-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: white;
+    border: 2px solid #CDDCEC;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: all 0.2s;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .room-btn:hover {
+    border-color: var(--school);
+    background: #F0F8FF;
+  }
+
+  .room-btn.active {
+    border-color: var(--school);
+    background: #E8F2FC;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+  }
+
+  .room-btn .room-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+
+  .room-btn .room-info {
+    flex: 1;
+  }
+
+  .room-btn .room-name {
+    font-weight: 700;
+    color: #1E3A5F;
+    font-size: 13px;
+  }
+
+  .room-btn .room-specs {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  .room-btn.active .room-name { color: var(--primary); }
+
+  /* RADIO GROUP */
+  .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1E3A5F;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+
+  .radio-group label:hover { background: #F0F6FC; }
+
+  .radio-group input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--slider-fg);
+    cursor: pointer;
+  }
+
+  .disclaimer {
+    background: #E2EFFA;
+    color: #0D405B;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-top: 15px;
+  }
+
+  .main-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 15px;
+  }
+
+  .energy-label-row {
+    background: #E6F0F7;
+    border: 2px solid #B3D2E8;
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+
+  .label-pill {
+    font-size: 24px;
+    font-weight: 800;
+    color: white;
+    padding: 8px 28px;
+    border-radius: 8px;
+    min-width: 80px;
+    text-align: center;
+    transition: background 0.3s;
+  }
+
+  .badge {
+    background: white;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #003153;
+    border: 2px solid #98C1D9;
+  }
+
+  .badge.lmw { font-size: 15px; font-weight: 700; }
+
+  .presets-label {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+
+  .presets {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+
+  .preset-btn {
+    background: white;
+    color: #164863;
+    border: 2px solid #B9D4E7;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .preset-btn:hover { border-color: var(--slider-fg); background: #F0F8FF; }
+  .preset-btn.active { background: var(--slider-fg); color: white; border-color: var(--slider-fg); }
+
+  .price-box {
+    background: #E8F0F9;
+    border: 2px solid #B9D4E7;
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+  }
+
+  .price-box .price-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .price-box input {
+    width: 90px;
+    padding: 8px;
+    border: 2px solid #7AA9C4;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1F4E79;
+    text-align: right;
+    font-family: inherit;
+    outline: none;
+  }
+
+  .price-box input:focus { border-color: var(--slider-fg); }
+
+  .price-box select {
+    padding: 8px;
+    border: 2px solid #7AA9C4;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1F4E79;
+    font-family: inherit;
+    background: white;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .price-box .unit { font-size: 13px; font-weight: 700; color: #2C5F7B; }
+
+  .sliders-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .slider-card {
+    background: #F9FCFF;
+    border: 2px solid #E2ECF5;
+    border-radius: 8px;
+    padding: 15px;
+  }
+
+  .slider-card .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .slider-card .slider-header .label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #164863;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .slider-card .slider-header .value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2C7DA0;
+  }
+
+  .slider-card input[type="range"] {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--slider-bg);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    margin: 8px 0 4px;
+  }
+
+  .slider-card input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--slider-fg);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  .slider-card input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--slider-fg);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  .slider-card .display-value {
+    text-align: right;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0E4B6B;
+  }
+
+  .info-row {
+    background: #EEF5FA;
+    border-radius: 8px;
+    padding: 10px 20px;
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 15px;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .result-card {
+    background: var(--result-bg);
+    border: 2px solid var(--result-border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+
+  .result-card .result-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #3B5F7A;
+    margin-bottom: 8px;
+  }
+
+  .result-card .result-value {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  .result-card .result-value .num {
+    font-size: 26px;
+    font-weight: 800;
+    color: #003249;
+  }
+
+  .result-card .result-value .unit {
+    font-size: 13px;
+    color: #2D618C;
+    font-weight: 500;
+  }
+
+  .button-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-light); }
+
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: var(--success-hover); }
+
+  .btn-outline {
+    background: white;
+    color: var(--primary);
+    border: 1px solid #AAC3D4;
+  }
+  .btn-outline:hover { background: #F0F6FC; }
+
+  .footnote {
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 43, 64, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg);
+    border-radius: 12px;
+    max-width: 750px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  .modal-header {
+    background: var(--primary);
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .modal-header h2 { color: white; font-size: 20px; }
+  .modal-header p { color: #CBD5E1; font-size: 12px; margin-top: 4px; }
+
+  .modal-body { background: white; padding: 20px 25px; }
+
+  .modal-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 18px 0 8px;
+  }
+
+  .modal-section-title:first-child { margin-top: 0; }
+
+  .modal-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #E0E0E0;
+    font-size: 13px;
+  }
+
+  .modal-row .label { color: #666; }
+  .modal-row .value { font-weight: 700; color: var(--text); }
+
+  .modal-footer {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: var(--bg);
+    border-radius: 0 0 12px 12px;
+  }
+
+  @media (max-width: 1000px) {
+    .content { flex-direction: column; }
+    .left-panel { width: 100%; min-width: unset; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+    .right-panel { max-height: none; }
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 8px; }
+    .header { padding: 14px 16px 12px; }
+    .left-panel, .right-panel { padding: 16px; }
+    .sliders-grid, .results-grid { grid-template-columns: 1fr; }
+    .header-info { gap: 14px; font-size: 12px; }
+    .field-row { flex-direction: column; align-items: stretch; gap: 4px; }
+    .field-row label { width: auto; }
+    .energy-label-row { flex-direction: column; align-items: flex-start; }
+    .button-row { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+    .header-brand .logo-img { width: 36px; height: 36px; }
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #F1F5F9; }
+  ::-webkit-scrollbar-thumb { background: #B0C4D4; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #8FA8BC; }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <img src="logo.png" alt="LightingBuro Logo" class="logo-img">
+        <div>
+          <h1 id="appTitle">Lighting Bureau <span class="school-badge">School</span></h1>
+          <p id="appSubtitle">Free lighting calculator for schools</p>
+        </div>
+      </div>
+      <div class="lang-buttons" id="langButtons"></div>
+    </div>
+    <div class="header-info" id="headerInfo">
+      <div class="header-info-item">👤 <span id="hProjectLabel">Project:</span> <span class="value" id="hProject">Janssens</span></div>
+      <div class="header-info-item">📍 <span id="hAddressLabel">Address:</span> <span class="value empty" id="hAddress">—</span></div>
+      <div class="header-info-item">🏫 <span id="hBuildingLabel">Space:</span> <span class="value" id="hBuilding">Classroom</span></div>
+      <div class="header-info-item">🔆 <span id="hDimmableLabel">Dimmable:</span> <span class="value" id="hDimmable">—</span></div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- LEFT PANEL -->
+    <aside class="left-panel">
+      <!-- General info -->
+      <div class="section-title">📝 <span id="secGeneralInfo">General information</span></div>
+      <div class="info-block">
+        <div class="field-row">
+          <label id="lblProjectName">Name / project</label>
+          <input type="text" id="projectName" value="Janssens" placeholder="Enter name">
+        </div>
+        <div class="field-row">
+          <label id="lblAddress">Address / location</label>
+          <input type="text" id="addressName" value="" placeholder="Enter address (optional)">
+        </div>
+        <div class="field-row">
+          <label id="lblCountry">Country</label>
+          <select id="countrySelect"></select>
+        </div>
+      </div>
+
+      <!-- School rooms -->
+      <div class="rooms-title">
+        <span style="font-size:18px;">🏫</span>
+        <h3 id="roomsHeader">School Rooms — Quick Select</h3>
+        <span class="free-badge">FREE</span>
+      </div>
+      <div id="roomsContainer"></div>
+
+      <!-- Dimmable -->
+      <div class="section-title">🎚️ <span id="secDimmable">Dimmable</span></div>
+      <div class="info-block">
+        <div class="radio-group">
+          <label><input type="radio" name="dimmable" value="yes" checked> <span id="dimYesLabel">Yes, dimmable</span></label>
+          <label><input type="radio" name="dimmable" value="no"> <span id="dimNoLabel">No, fixed</span></label>
+          <label><input type="radio" name="dimmable" value="smart"> <span id="dimSmartLabel">Smart control</span></label>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="section-title">👤 <span id="secContact">Contact</span></div>
+      <div class="info-block">
+        <div class="field-row">
+          <label id="lblContactPerson">Contact person</label>
+          <input type="text" id="contactPerson" value="" placeholder="Enter name (optional)">
+        </div>
+        <div class="field-row">
+          <label id="lblEmail">Email</label>
+          <input type="email" id="contactEmail" value="" placeholder="Enter email (optional)">
+        </div>
+      </div>
+
+      <div class="disclaimer" id="epbDisclaimer">🌿 Consumption only – EPB out of scope</div>
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <main class="right-panel">
+      <div class="main-title">🧮 <span id="mainTitle">Annual consumption &amp; costs</span></div>
+
+      <div class="energy-label-row">
+        <div class="label-pill" id="labelPill" style="background:#8BC34A;">A</div>
+        <div class="badge" id="dimmableIcon">🔆 dimmable</div>
+        <div class="badge lmw" id="lmwDisplay">150 lm/W</div>
+        <div class="badge lmw" id="kelvinDisplay">5000 K</div>
+      </div>
+
+      <div class="presets-label" id="presetsLabel">Quick presets:</div>
+      <div class="presets" id="presetsContainer"></div>
+
+      <div class="price-box">
+        <div class="price-title" id="priceTitle">💶 Energy price</div>
+        <span class="unit">/kWh</span>
+        <select id="currencySelect">
+          <option value="€">€</option>
+          <option value="$">$</option>
+          <option value="£">£</option>
+          <option value="SEK">SEK</option>
+          <option value="CAD">CAD</option>
+          <option value="AUD">AUD</option>
+          <option value="JPY">JPY</option>
+          <option value="CNY">CNY</option>
+          <option value="ZAR">ZAR</option>
+        </select>
+        <input type="number" id="energyPrice" value="0.32" step="0.01" min="0">
+      </div>
+
+      <div class="sliders-grid">
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="label">🔢 <span id="lblNumLuminaires">Number of luminaires</span></span>
+            <span class="value" id="valNumLuminaires">25</span>
+          </div>
+          <input type="range" id="numLuminaires" min="1" max="200" value="25">
+          <div class="display-value" id="dispNumLuminaires">25 pcs</div>
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="label">⚡ <span id="lblPowerPerLuminaire">Power per luminaire</span></span>
+            <span class="value" id="valPowerPerLuminaire">24</span>
+          </div>
+          <input type="range" id="powerPerLuminaire" min="5" max="200" value="24">
+          <div class="display-value" id="dispPowerPerLuminaire">24 W</div>
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="label">🕐 <span id="lblHoursPerDay">Hours / day</span></span>
+            <span class="value" id="valHoursPerDay">5</span>
+          </div>
+          <input type="range" id="hoursPerDay" min="1" max="24" value="5">
+          <div class="display-value" id="dispHoursPerDay">5 hours</div>
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="label">📅 <span id="lblDaysPerWeek">Days / week</span></span>
+            <span class="value" id="valDaysPerWeek">7</span>
+          </div>
+          <input type="range" id="daysPerWeek" min="1" max="7" value="7">
+          <div class="display-value" id="dispDaysPerWeek">7 days</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <span id="weeksLabel">📆 Weeks/year: 52</span>
+        <span id="co2FactorLabel">📊 CO₂ factor: 0.5 kg/kWh</span>
+      </div>
+
+      <div class="results-grid">
+        <div class="result-card">
+          <div class="result-label">⚡ <span id="resTotalPowerLabel">Total power</span></div>
+          <div class="result-value"><span class="num" id="resTotalPower">0.60</span><span class="unit">kW</span></div>
+        </div>
+        <div class="result-card">
+          <div class="result-label">📊 <span id="resConsumptionLabel">Annual consumption</span></div>
+          <div class="result-value"><span class="num" id="resConsumption">2,184</span><span class="unit">kWh</span></div>
+        </div>
+        <div class="result-card">
+          <div class="result-label">💰 <span id="resCostLabel">Energy cost / year</span></div>
+          <div class="result-value"><span class="num" id="resCost">699</span><span class="unit" id="resCostUnit">€</span></div>
+        </div>
+        <div class="result-card">
+          <div class="result-label">🌿 <span id="resCo2Label">CO₂ emission (kg)</span></div>
+          <div class="result-value"><span class="num" id="resCo2">1,092</span><span class="unit">kg</span></div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button class="btn btn-primary" id="btnUpdate">🔄 Update</button>
+        <button class="btn btn-success" id="btnPdf">📄 PDF Report</button>
+        <button class="btn btn-outline" id="btnPreview">👁 Preview</button>
+        <button class="btn btn-outline" id="btnReset">↺ Reset</button>
+      </div>
+
+      <div class="footnote" id="footnote1"></div>
+      <div class="footnote" id="footnote2"></div>
+    </main>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">PDF Report Preview</h2>
+      <p id="modalDate">Generated on: —</p>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="btnCloseModal">Close</button>
+      <button class="btn btn-success" id="btnDownloadModal">⬇ Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// SCHOOL ROOMS — Presets met realistische waarden voor schoolgebouwen
+// ============================================================================
+const SCHOOL_ROOMS = [
+  {
+    id: 'classroom',
+    icon: '🏫',
+    name: { en: 'Classroom', nl: 'Klaslokaal', de: 'Klassenzimmer', fr: 'Salle de classe', es: 'Aula', pt: 'Sala de aula', no: 'Klasserom', sv: 'Klassrum', it: 'Aula' },
+    specs: { en: '15 fixtures × 24W · 6h/day · 5 days', nl: '15 armaturen × 24W · 6u/dag · 5 dagen' },
+    values: { num: 15, power: 24, hours: 6, days: 5 }
+  },
+  {
+    id: 'corridor',
+    icon: '🚪',
+    name: { en: 'Corridor', nl: 'Gang', de: 'Flur', fr: 'Couloir', es: 'Pasillo', pt: 'Corredor', no: 'Korridor', sv: 'Korridor', it: 'Corridoio' },
+    specs: { en: '10 fixtures × 20W · 10h/day · 5 days', nl: '10 armaturen × 20W · 10u/dag · 5 dagen' },
+    values: { num: 10, power: 20, hours: 10, days: 5 }
+  },
+  {
+    id: 'gym',
+    icon: '🏀',
+    name: { en: 'Gymnasium', nl: 'Gymzaal', de: 'Turnhalle', fr: 'Gymnase', es: 'Gimnasio', pt: 'Ginásio', no: 'Gymsal', sv: 'Gymnastiksal', it: 'Palestra' },
+    specs: { en: '20 fixtures × 60W · 4h/day · 5 days', nl: '20 armaturen × 60W · 4u/dag · 5 dagen' },
+    values: { num: 20, power: 60, hours: 4, days: 5 }
+  },
+  {
+    id: 'office',
+    icon: '💼',
+    name: { en: 'Director office', nl: 'Directiekantoor', de: 'Direktionsbüro', fr: 'Bureau de direction', es: 'Despacho dirección', pt: 'Escritório direção', no: 'Direktørkontor', sv: 'Rektorskontor', it: 'Ufficio direzione' },
+    specs: { en: '6 fixtures × 18W · 8h/day · 5 days', nl: '6 armaturen × 18W · 8u/dag · 5 dagen' },
+    values: { num: 6, power: 18, hours: 8, days: 5 }
+  },
+  {
+    id: 'canteen',
+    icon: '🍽️',
+    name: { en: 'Canteen / Refectory', nl: 'Refter / Kantine', de: 'Kantine', fr: 'Cantine', es: 'Comedor', pt: 'Refeitório', no: 'Kantine', sv: 'Matsal', it: 'Mensa' },
+    specs: { en: '12 fixtures × 30W · 3h/day · 5 days', nl: '12 armaturen × 30W · 3u/dag · 5 dagen' },
+    values: { num: 12, power: 30, hours: 3, days: 5 }
+  },
+  {
+    id: 'library',
+    icon: '📚',
+    name: { en: 'Library', nl: 'Bibliotheek', de: 'Bibliothek', fr: 'Bibliothèque', es: 'Biblioteca', pt: 'Biblioteca', no: 'Bibliotek', sv: 'Bibliotek', it: 'Biblioteca' },
+    specs: { en: '18 fixtures × 22W · 6h/day · 5 days', nl: '18 armaturen × 22W · 6u/dag · 5 dagen' },
+    values: { num: 18, power: 22, hours: 6, days: 5 }
+  },
+  {
+    id: 'toilets',
+    icon: '🚻',
+    name: { en: 'Toilets', nl: 'Toiletten', de: 'Toiletten', fr: 'Toilettes', es: 'Aseos', pt: 'Casas de banho', no: 'Toaletter', sv: 'Toaletter', it: 'Bagni' },
+    specs: { en: '4 fixtures × 12W · 10h/day · 5 days', nl: '4 armaturen × 12W · 10u/dag · 5 dagen' },
+    values: { num: 4, power: 12, hours: 10, days: 5 }
+  },
+  {
+    id: 'parking',
+    icon: '🅿️',
+    name: { en: 'Parking / Outdoor', nl: 'Parking / Buiten', de: 'Parkplatz / Außen', fr: 'Parking / Extérieur', es: 'Aparcamiento / Exterior', pt: 'Estacionamento / Exterior', no: 'Parkering / Utendørs', sv: 'Parkering / Utomhus', it: 'Parcheggio / Esterno' },
+    specs: { en: '8 fixtures × 40W · 12h/day · 7 days', nl: '8 armaturen × 40W · 12u/dag · 7 dagen' },
+    values: { num: 8, power: 40, hours: 12, days: 7 }
+  }
+];
+
+// ============================================================================
+// TRANSLATIONS
+// ============================================================================
+const TRANSLATIONS = {
+  en: {
+    app_title: 'Lighting Bureau',
+    subtitle: 'Free lighting calculator for schools',
+    project: 'Project', address: 'Address', building_type: 'Space', dimmable: 'Dimmable',
+    general_info: 'General information', project_name: 'Name / project', address_label: 'Address / location', country: 'Country',
+    rooms_header: 'School Rooms — Quick Select',
+    dimmable_title: 'Dimmable', dimmable_yes: 'Yes, dimmable', dimmable_no: 'No, fixed', dimmable_smart: 'Smart control',
+    contact: 'Contact', contact_person: 'Contact person', email: 'Email',
+    epb_disclaimer: 'Consumption only – EPB out of scope',
+    annual_consumption_title: 'Annual consumption & costs',
+    energy_price: 'Energy price', num_luminaires: 'Number of luminaires', power_per_luminaire: 'Power per luminaire',
+    hours_per_day: 'Hours / day', days_per_week: 'Days / week',
+    hours: 'hours', days: 'days', pieces: 'pcs',
+    weeks_per_year: 'Weeks/year', factor: 'factor',
+    total_power: 'Total power', annual_consumption: 'Annual consumption', annual_cost: 'Energy cost / year', co2_emission: 'CO₂ emission (kg)',
+    update: 'Update', pdf_report: 'PDF Report', preview: 'Preview', reset: 'Reset',
+    energy_label_explanation: 'Energy label based on lm/W: A++ (>140), A+ (120-140), A (100-120), B (85-100), C (70-85), D (55-70), E (40-55), F (25-40), G (<25).',
+    pdf_info: 'PDF report contains all project data and calculations.',
+    pdf_preview: 'PDF Report Preview', close: 'Close', download_pdf: 'Download PDF',
+    project_details: 'Project details', lighting_installation: 'Lighting installation', usage_pattern: 'Usage pattern', annual_results: 'Annual results',
+    generated_on: 'Generated on', energy_label: 'Energy label', color_temperature: 'Color temperature',
+    pdf_project: 'Project', pdf_address: 'Address', pdf_contact: 'Contact', pdf_country: 'Country',
+    pdf_building_type: 'Space', pdf_dimmable: 'Dimmable', pdf_luminaires: 'Number of luminaires', pdf_power: 'Power per luminaire',
+    pdf_efficiency: 'Efficiency', pdf_color_temp: 'Color temperature', pdf_label: 'Energy label', pdf_hours: 'Hours',
+    pdf_total_power: 'Total power', pdf_consumption: 'Electricity consumption', pdf_cost: 'Energy cost',
+    pdf_co2: 'CO₂ emission', pdf_price: 'Energy price', pdf_disclaimer: 'EPB data is out of scope.',
+    language: 'Language', quick_presets: 'Quick presets',
+    led_premium: 'LED premium 150 lm/W | 5000K', led_standard: 'LED standard 120 lm/W | 4000K',
+    tl: 'TL 90 lm/W | 3000K', cfl: 'CFL 60 lm/W | 2700K', halogen: 'Halogen 20 lm/W | 2700K',
+    currency: 'Currency', yes: 'yes', no: 'no', smart: 'smart'
+  },
+  nl: {
+    app_title: 'VerlichtingsBuro',
+    subtitle: 'Gratis verlichtingscalculator voor scholen',
+    project: 'Project', address: 'Adres', building_type: 'Ruimte', dimmable: 'Dimbaar',
+    general_info: 'Algemene gegevens', project_name: 'Naam / project', address_label: 'Adres / locatie', country: 'Land',
+    rooms_header: 'Schoolruimtes — Snelkeuze',
+    dimmable_title: 'Dimbaar', dimmable_yes: 'Ja, dimbaar', dimmable_no: 'Nee, vast', dimmable_smart: 'Slimme sturing',
+    contact: 'Contact', contact_person: 'Contactpersoon', email: 'E-mail',
+    epb_disclaimer: 'Alleen verbruik – EPB buiten scope',
+    annual_consumption_title: 'Jaarlijks verbruik & kosten',
+    energy_price: 'Energieprijs', num_luminaires: 'Aantal armaturen', power_per_luminaire: 'Vermogen per armatuur',
+    hours_per_day: 'Branduren / dag', days_per_week: 'Dagen / week',
+    hours: 'uur', days: 'dagen', pieces: 'stuks',
+    weeks_per_year: 'Weken/jaar', factor: 'factor',
+    total_power: 'Totaal vermogen', annual_consumption: 'Jaarlijks verbruik', annual_cost: 'Energiekosten / jaar', co2_emission: 'CO₂-uitstoot (kg)',
+    update: 'Update', pdf_report: 'PDF Rapport', preview: 'Preview', reset: 'Reset',
+    energy_label_explanation: 'Energielabel op basis van lm/W: A++ (>140), A+ (120-140), A (100-120), B (85-100), C (70-85), D (55-70), E (40-55), F (25-40), G (<25).',
+    pdf_info: 'PDF rapport bevat alle projectgegevens en berekeningen.',
+    pdf_preview: 'PDF Rapport Voorbeeld', close: 'Sluiten', download_pdf: 'Download PDF',
+    project_details: 'Projectgegevens', lighting_installation: 'Verlichtingsinstallatie', usage_pattern: 'Gebruikspatroon', annual_results: 'Jaarlijkse resultaten',
+    generated_on: 'Gegenereerd op', energy_label: 'Energielabel', color_temperature: 'Kleurtemperatuur',
+    pdf_project: 'Project', pdf_address: 'Adres', pdf_contact: 'Contact', pdf_country: 'Land',
+    pdf_building_type: 'Ruimte', pdf_dimmable: 'Dimbaar', pdf_luminaires: 'Aantal armaturen', pdf_power: 'Vermogen per armatuur',
+    pdf_efficiency: 'Energie-efficiëntie', pdf_color_temp: 'Kleurtemperatuur', pdf_label: 'Energielabel', pdf_hours: 'Branduren',
+    pdf_total_power: 'Totaal vermogen', pdf_consumption: 'Elektriciteitsverbruik', pdf_cost: 'Energiekosten',
+    pdf_co2: 'CO₂-uitstoot', pdf_price: 'Energieprijs', pdf_disclaimer: 'EPB gegevens zijn buiten beschouwing gelaten.',
+    language: 'Taal', quick_presets: 'Snelle presets',
+    led_premium: 'LED premium 150 lm/W | 5000K', led_standard: 'LED standaard 120 lm/W | 4000K',
+    tl: 'TL 90 lm/W | 3000K', cfl: 'CFL 60 lm/W | 2700K', halogen: 'Halogen 20 lm/W | 2700K',
+    currency: 'Valuta', yes: 'ja', no: 'nee', smart: 'slim'
+  },
+  de: {
+    app_title: 'Beleuchtungsbüro',
+    subtitle: 'Kostenloser Beleuchtungsrechner für Schulen',
+    project: 'Projekt', address: 'Adresse', building_type: 'Raum', dimmable: 'Dimmbar',
+    general_info: 'Allgemeine Angaben', project_name: 'Name / Projekt', address_label: 'Adresse / Standort', country: 'Land',
+    rooms_header: 'Schulräume — Schnellauswahl',
+    dimmable_title: 'Dimmbar', dimmable_yes: 'Ja, dimmbar', dimmable_no: 'Nein, fest', dimmable_smart: 'Intelligente Steuerung',
+    contact: 'Kontakt', contact_person: 'Ansprechpartner', email: 'E-Mail',
+    epb_disclaimer: 'Nur Verbrauch – EPB außerhalb des Geltungsbereichs',
+    annual_consumption_title: 'Jährlicher Verbrauch & Kosten',
+    energy_price: 'Energiepreis', num_luminaires: 'Anzahl Leuchten', power_per_luminaire: 'Leistung pro Leuchte',
+    hours_per_day: 'Stunden / Tag', days_per_week: 'Tage / Woche',
+    hours: 'Stunden', days: 'Tage', pieces: 'Stk',
+    weeks_per_year: 'Wochen/Jahr', factor: 'Faktor',
+    total_power: 'Gesamtleistung', annual_consumption: 'Jahresverbrauch', annual_cost: 'Energiekosten / Jahr', co2_emission: 'CO₂-Emission (kg)',
+    update: 'Aktualisieren', pdf_report: 'PDF-Bericht', preview: 'Vorschau', reset: 'Zurücksetzen',
+    energy_label_explanation: 'Energielabel basierend auf lm/W: A++ (>140), A+ (120-140), A (100-120), B (85-100), C (70-85), D (55-70), E (40-55), F (25-40), G (<25).',
+    pdf_info: 'PDF-Bericht enthält alle Projektdaten und Berechnungen.',
+    pdf_preview: 'PDF-Bericht Vorschau', close: 'Schließen', download_pdf: 'PDF herunterladen',
+    project_details: 'Projektdetails', lighting_installation: 'Beleuchtungsanlage', usage_pattern: 'Nutzungsmuster', annual_results: 'Jährliche Ergebnisse',
+    generated_on: 'Erstellt am', energy_label: 'Energielabel', color_temperature: 'Farbtemperatur',
+    pdf_project: 'Projekt', pdf_address: 'Adresse', pdf_contact: 'Kontakt', pdf_country: 'Land',
+    pdf_building_type: 'Raum', pdf_dimmable: 'Dimmbar', pdf_luminaires: 'Anzahl Leuchten', pdf_power: 'Leistung pro Leuchte',
+    pdf_efficiency: 'Effizienz', pdf_color_temp: 'Farbtemperatur', pdf_label: 'Energielabel', pdf_hours: 'Betriebsstunden',
+    pdf_total_power: 'Gesamtleistung', pdf_consumption: 'Stromverbrauch', pdf_cost: 'Energiekosten',
+    pdf_co2: 'CO₂-Emission', pdf_price: 'Energiepreis', pdf_disclaimer: 'EPB-Daten sind nicht enthalten.',
+    language: 'Sprache', quick_presets: 'Schnellvoreinstellungen',
+    led_premium: 'LED Premium 150 lm/W | 5000K', led_standard: 'LED Standard 120 lm/W | 4000K',
+    tl: 'TL 90 lm/W | 3000K', cfl: 'CFL 60 lm/W | 2700K', halogen: 'Halogen 20 lm/W | 2700K',
+    currency: 'Währung', yes: 'ja', no: 'nein', smart: 'smart'
+  },
+  fr: {
+    app_title: 'Bureau d\'Éclairage',
+    subtitle: 'Calculateur d\'éclairage gratuit pour les écoles',
+    project: 'Projet', address: 'Adresse', building_type: 'Espace', dimmable: 'Variateur',
+    general_info: 'Informations générales', project_name: 'Nom / projet', address_label: 'Adresse / lieu', country: 'Pays',
+    rooms_header: 'Salles d\'école — Sélection rapide',
+    dimmable_title: 'Variateur', dimmable_yes: 'Oui, variable', dimmable_no: 'Non, fixe', dimmable_smart: 'Contrôle intelligent',
+    contact: 'Contact', contact_person: 'Personne de contact', email: 'E-mail',
+    epb_disclaimer: 'Consommation uniquement – PEB hors périmètre',
+    annual_consumption_title: 'Consommation & coûts annuels',
+    energy_price: 'Prix de l\'énergie', num_luminaires: 'Nombre de luminaires', power_per_luminaire: 'Puissance par luminaire',
+    hours_per_day: 'Heures / jour', days_per_week: 'Jours / semaine',
+    hours: 'heures', days: 'jours', pieces: 'pcs',
+    weeks_per_year: 'Semaines/an', factor: 'facteur',
+    total_power: 'Puissance totale', annual_consumption: 'Consommation annuelle', annual_cost: 'Coût énergétique / an', co2_emission: 'Émission de CO₂ (kg)',
+    update: 'Mettre à jour', pdf_report: 'Rapport PDF', preview: 'Aperçu', reset: 'Réinitialiser',
+    energy_label_explanation: 'Étiquette énergétique basée sur lm/W : A++ (>140), A+ (120-140), A (100-120), B (85-100), C (70-85), D (55-70), E (40-55), F (25-40), G (<25).',
+    pdf_info: 'Le rapport PDF contient toutes les données du projet et les calculs.',
+    pdf_preview: 'Aperçu du rapport PDF', close: 'Fermer', download_pdf: 'Télécharger PDF',
+    project_details: 'Détails du projet', lighting_installation: 'Installation d\'éclairage', usage_pattern: 'Modèle d\'utilisation', annual_results: 'Résultats annuels',
+    generated_on: 'Généré le', energy_label: 'Étiquette énergétique', color_temperature: 'Température de couleur',
+    pdf_project: 'Projet', pdf_address: 'Adresse', pdf_contact: 'Contact', pdf_country: 'Pays',
+    pdf_building_type: 'Espace', pdf_dimmable: 'Variateur', pdf_luminaires: 'Nombre de luminaires', pdf_power: 'Puissance par luminaire',
+    pdf_efficiency: 'Efficacité', pdf_color_temp: 'Température de couleur', pdf_label: 'Étiquette énergétique', pdf_hours: 'Heures de fonctionnement',
+    pdf_total_power: 'Puissance totale', pdf_consumption: 'Consommation électrique', pdf_cost: 'Coût énergétique',
+    pdf_co2: 'Émission de CO₂', pdf_price: 'Prix de l\'énergie', pdf_disclaimer: 'Les données PEB sont hors périmètre.',
+    language: 'Langue', quick_presets: 'Préréglages rapides',
+    led_premium: 'LED premium 150 lm/W | 5000K', led_standard: 'LED standard 120 lm/W | 4000K',
+    tl: 'TL 90 lm/W | 3000K', cfl: 'CFL 60 lm/W | 2700K', halogen: 'Halogène 20 lm/W | 2700K',
+    currency: 'Devise', yes: 'oui', no: 'non', smart: 'intelligent'
+  },
+  es: {
+    app_title: 'Oficina de Iluminación',
+    subtitle: 'Calculadora de iluminación gratuita para escuelas',
+    project: 'Proyecto', address: 'Dirección', building_type: 'Espacio', dimmable: 'Regulable',
+    general_info: 'Información general', project_name: 'Nombre / proyecto', address_label: 'Dirección / ubicación', country: 'País',
+    rooms_header: 'Salas escolares — Selección rápida',
+    dimmable_title: 'Regulable', dimmable_yes: 'Sí, regulable', dimmable_no: 'No, fijo', dimmable_smart: 'Control inteligente',
+    contact: 'Contacto', contact_person: 'Persona de contacto', email: 'Correo electrónico',
+    epb_disclaimer: 'Solo consumo – EPB fuera de alcance',
+    annual_consumption_title: 'Consumo y costes anuales',
+    energy_price: 'Precio de la energía', num_luminaires: 'Número de luminarias', power_per_luminaire: 'Potencia por luminaria',
+    hours_per_day: 'Horas / día', days_per_week: 'Días / semana',
+    hours: 'horas', days: 'días', pieces: 'uds',
+    weeks_per_year: 'Semanas/año', factor: 'factor',
+    total_power: 'Potencia total', annual_consumption: 'Consumo anual', annual_cost: 'Coste energético / año', co2_emission: 'Emisión de CO₂ (kg)',
+    update: 'Actualizar', pdf_report: 'Informe PDF', preview: 'Vista previa', reset: 'Restablecer',
+    energy_label_explanation: 'Etiqueta energética basada en lm/W: A++ (>140), A+ (120-140), A (100-120), B (85-100), C (70-85), D (55-70), E (40-55), F (25-40), G (<25).',
+    pdf_info: 'El informe PDF contiene todos los datos del proyecto y los cálculos.',
+    pdf_preview: 'Vista previa del informe PDF', close: 'Cerrar', download_pdf: 'Descargar PDF',
+    project_details: 'Detalles del proyecto', lighting_installation: 'Instalación de iluminación', usage_pattern: 'Patrón de uso', annual_results: 'Resultados anuales',
+    generated_on: 'Generado el', energy_label: 'Etiqueta energética', color_temperature: 'Temperatura de color',
+    pdf_project: 'Proyecto', pdf_address: 'Dirección', pdf_contact: 'Contacto', pdf_country: 'País',
+    pdf_building_type: 'Espacio', pdf_dimmable: 'Regulable', pdf_luminaires: 'Número de luminarias', pdf_power: 'Potencia por luminaria',
+    pdf_efficiency: 'Eficiencia', pdf_color_temp: 'Temperatura de color', pdf_label: 'Etiqueta energética', pdf_hours: 'Horas de funcionamiento',
+    pdf_total_power: 'Potencia total', pdf_consumption: 'Consumo eléctrico', pdf_cost: 'Coste energético',
+    pdf_co2: 'Emisión de CO₂', pdf_price: 'Precio de la energía', pdf_disclaimer: 'Los datos EPB están fuera de alcance.',
+    language: 'Idioma', quick_presets: 'Ajustes rápidos',
+    led_premium: 'LED premium 150 lm/W | 5000K', led_standard: 'LED estándar 120 lm/W | 4000K',
+    tl: 'TL 90 lm/W | 3000K', cfl: 'CFL 60 lm/W | 2700K', halogen: 'Halógeno 20 lm/W | 2700K',
+    currency: 'Moneda', yes: 'sí', no: 'no', smart: 'inteligente'
+  },
+  pt: {
+    app_title: 'Gabinete de Iluminação',
+    subtitle: 'Calculadora de iluminação gratuita para escolas',
+    project: 'Projeto', address: 'Endereço', building_type: 'Espaço', dimmable: 'Regulável',
+    general_info: 'Informações gerais', project_name: 'Nome / projeto', address_label: 'Endereço / localização', country: 'País',
+    rooms_header: 'Salas escolares — Seleção rápida',
+    dimmable_title: 'Regulável', dimmable_yes: 'Sim, regulável', dimmable_no: 'Não, fixo', dimmable_smart: 'Controlo inteligente',
+    contact: 'Contacto', contact_person: 'Pessoa de contacto', email: 'E-mail',
+    epb_disclaimer: 'Apenas consumo – EPB fora do âmbito',
+    annual_consumption_title: 'Consumo e custos anuais',
+    energy_price: 'Preço da energia', num_luminaires: 'Número de luminárias', power_per_luminaire: 'Potência por luminária',
+    hours_per_day: 'Horas / dia', days_per_week: 'Dias / semana',
+    hours: 'horas', days: 'dias', pieces: 'un',
+    weeks_per_year: 'Semanas/ano', factor: 'fator',
+    total_power: 'Potência total', annual_consumption: 'Consumo anual', annual_cost: 'Custo energético / ano', co2_emission: 'Emissão de CO₂ (kg)',
+    update: 'Atualizar', pdf_report: 'Relatório PDF', preview: 'Pré-visualizar', reset: 'Redefinir',
+    energy_label_explanation: 'Etiqueta energética baseada em lm/W: A++ (>140), A+ (120-140), A (100-120), B (85-100), C (70-85), D (55-70), E (40-55), F (25-40), G (<25).',
+    pdf_info: 'O relatório PDF contém todos os dados do projeto e cálculos.',
+    pdf_preview: 'Pré-visualização do relatório PDF', close: 'Fechar', download_pdf: 'Descarregar PDF',
+    project_details: 'Detalhes do projeto', lighting_installation: 'Instalação de iluminação', usage_pattern: 'Padrão de utilização', annual_results: 'Resultados anuais',
+    generated_on: 'Gerado em', energy_label: 'Etiqueta energética', color_temperature: 'Temperatura de cor',
+    pdf_project: 'Projeto', pdf_address: 'Endereço', pdf_contact: 'Contacto', pdf_country: 'País',
+    pdf_building_type: 'Espaço', pdf_dimmable: 'Regulável', pdf_luminaires: 'Número de luminárias', pdf_power: 'Potência por luminária',
+    pdf_efficiency: 'Eficiência', pdf_color_temp: 'Temperatura de cor', pdf_label: 'Etiqueta energética', pdf_hours: 'Horas de funcionamento',
+    pdf_total_power: 'Potência total', pdf_consumption: 'Consumo de eletricidade', pdf_cost: 'Custo energético',
+    pdf_co2: 'Emissão de CO₂', pdf_price: 'Preço da energia', pdf_disclaimer: 'Os dados EPB estão fora do âmbito.',
+    language: 'Idioma', quick_presets: 'Predefinições rápidas',
+    led_premium: 'LED premium 150 lm/W | 5000K', led_standard: 'LED padrão 120 lm/W | 4000K',
+    tl: 'TL 90 lm/W | 3000K', cfl: 'CFL 60 lm/W | 2700K', halogen: 'Halógeno 20 lm/W | 2700K',
+    currency: 'Moeda', yes: 'sim', no: 'não', smart: 'inteligente'
+  },
+  no: {
+    app_title: 'Belysningsbyrå',
+    subtitle: 'Gratis belysningskalkulator for skoler',
+    project: 'Prosjekt', address: 'Adresse', building_type: 'Rom', dimmable: 'Dimmbar',
+    general_info: 'Generell informasjon', project_name: 'Navn / prosjekt', address_label: 'Adresse / sted', country: 'Land',
+    rooms_header: 'Skolerom — Hurtigvalg',
+    dimmable_title: 'Dimmbar', dimmable_yes: 'Ja, dimmbar', dimmable_no: 'Nei, fast', dimmable_smart: 'Smart styring',
+    contact: 'Kontakt', contact_person: 'Kontaktperson', email: 'E-post',
+    epb_disclaimer: 'Bare forbruk – EPB utenfor omfang',
+    annual_consumption_title: 'Årlig forbruk og kostnader',
+    energy_price: 'Energipris', num_luminaires: 'Antall armaturer', power_per_luminaire: 'Effekt per armatur',
+    hours_per_day: 'Timer / dag', days_per_week: 'Dager / uke',
+    hours: 'timer', days: 'dager', pieces: 'stk',
+    weeks_per_year: 'Uker/år', factor: 'faktor',
+    total_power: 'Total effekt', annual_consumption: 'Årlig forbruk', annual_cost: 'Energikostnad / år', co2_emission: 'CO₂-utslipp (kg)',
+    update: 'Oppdater', pdf_report: 'PDF-rapport', preview: 'Forhåndsvisning', reset: 'Tilbakestill',
+    energy_label_explanation: 'Energimerke basert på lm/W: A++ (>140), A+ (120-140), A (100-120), B (85-100), C (70-85), D (55-70), E (40-55), F (25-40), G (<25).',
+    pdf_info: 'PDF-rapporten inneholder alle prosjektdata og beregninger.',
+    pdf_preview: 'Forhåndsvisning av PDF-rapport', close: 'Lukk', download_pdf: 'Last ned PDF',
+    project_details: 'Prosjektdetaljer', lighting_installation: 'Belysningsinstallasjon', usage_pattern: 'Bruksmønster', annual_results: 'Årlige resultater',
+    generated_on: 'Generert den', energy_label: 'Energimerke', color_temperature: 'Fargetemperatur',
+    pdf_project: 'Prosjekt', pdf_address: 'Adresse', pdf_contact: 'Kontakt', pdf_country: 'Land',
+    pdf_building_type: 'Rom', pdf_dimmable: 'Dimmbar', pdf_luminaires: 'Antall armaturer', pdf_power: 'Effekt per armatur',
+    pdf_efficiency: 'Effektivitet', pdf_color_temp: 'Fargetemperatur', pdf_label: 'Energimerke', pdf_hours: 'Brukstimer',
+    pdf_total_power: 'Total effekt', pdf_consumption: 'Strømforbruk', pdf_cost: 'Energikostnad',
+    pdf_co2: 'CO₂-utslipp', pdf_price: 'Energipris', pdf_disclaimer: 'EPB-data er utenfor omfang.',
+    language: 'Språk', quick_presets: 'Hurtigvalg',
+    led_premium: 'LED premium 150 lm/W | 5000K', led_standard: 'LED standard 120 lm/W | 4000K',
+    tl: 'TL 90 lm/W | 3000K', cfl: 'CFL 60 lm/W | 2700K', halogen: 'Halogen 20 lm/W | 2700K',
+    currency: 'Valuta', yes: 'ja', no: 'nei', smart: 'smart'
+  },
+  sv: {
+    app_title: 'Belysningsbyrå',
+    subtitle: 'Gratis belysningskalkylator för skolor',
+    project: 'Projekt', address: 'Adress', building_type: 'Rum', dimmable: 'Dimbar',
+    general_info: 'Allmän information', project_name: 'Namn / projekt', address_label: 'Adress / plats', country: 'Land',
+    rooms_header: 'Skolsalar — Snabbval',
+    dimmable_title: 'Dimbar', dimmable_yes: 'Ja, dimbar', dimmable_no: 'Nej, fast', dimmable_smart: 'Smart styrning',
+    contact: 'Kontakt', contact_person: 'Kontaktperson', email: 'E-post',
+    epb_disclaimer: 'Endast förbrukning – EPB utanför omfattning',
+    annual_consumption_title: 'Årlig förbrukning och kostnader',
+    energy_price: 'Energipris', num_luminaires: 'Antal armaturer', power_per_luminaire: 'Effekt per armatur',
+    hours_per_day: 'Timmar / dag', days_per_week: 'Dagar / vecka',
+    hours: 'timmar', days: 'dagar', pieces: 'st',
+    weeks_per_year: 'Veckor/år', factor: 'faktor',
+    total_power: 'Total effekt', annual_consumption: 'Årlig förbrukning', annual_cost: 'Energikostnad / år', co2_emission: 'CO₂-utsläpp (kg)',
+    update: 'Uppdatera', pdf_report: 'PDF-rapport', preview: 'Förhandsgranska', reset: 'Återställ',
+    energy_label_explanation: 'Energimärkning baserad på lm/W: A++ (>140), A+ (120-140), A (100-120), B (85-100), C (70-85), D (55-70), E (40-55), F (25-40), G (<25).',
+    pdf_info: 'PDF-rapporten innehåller alla projektdata och beräkningar.',
+    pdf_preview: 'Förhandsgranskning av PDF-rapport', close: 'Stäng', download_pdf: 'Ladda ner PDF',
+    project_details: 'Projektdetaljer', lighting_installation: 'Belysningsinstallation', usage_pattern: 'Användningsmönster', annual_results: 'Årliga resultat',
+    generated_on: 'Genererad den', energy_label: 'Energimärkning', color_temperature: 'Färgtemperatur',
+    pdf_project: 'Projekt', pdf_address: 'Adress', pdf_contact: 'Kontakt', pdf_country: 'Land',
+    pdf_building_type: 'Rum', pdf_dimmable: 'Dimbar', pdf_luminaires: 'Antal armaturer', pdf_power: 'Effekt per armatur',
+    pdf_efficiency: 'Effektivitet', pdf_color_temp: 'Färgtemperatur', pdf_label: 'Energimärkning', pdf_hours: 'Brukstimmar',
+    pdf_total_power: 'Total effekt', pdf_consumption: 'Elförbrukning', pdf_cost: 'Energikostnad',
+    pdf_co2: 'CO₂-utsläpp', pdf_price: 'Energipris', pdf_disclaimer: 'EPB-data är utanför omfattning.',
+    language: 'Språk', quick_presets: 'Snabbval',
+    led_premium: 'LED premium 150 lm/W | 5000K', led_standard: 'LED standard 120 lm/W | 4000K',
+    tl: 'TL 90 lm/W | 3000K', cfl: 'CFL 60 lm/W | 2700K', halogen: 'Halogen 20 lm/W | 2700K',
+    currency: 'Valuta', yes: 'ja', no: 'nej', smart: 'smart'
+  },
+  it: {
+    app_title: 'Ufficio Illuminazione',
+    subtitle: 'Calcolatore di illuminazione gratuito per le scuole',
+    project: 'Progetto', address: 'Indirizzo', building_type: 'Spazio', dimmable: 'Dimmerabile',
+    general_info: 'Informazioni generali', project_name: 'Nome / progetto', address_label: 'Indirizzo / posizione', country: 'Paese',
+    rooms_header: 'Aule scolastiche — Selezione rapida',
+    dimmable_title: 'Dimmerabile', dimmable_yes: 'Sì, dimmerabile', dimmable_no: 'No, fisso', dimmable_smart: 'Controllo intelligente',
+    contact: 'Contatto', contact_person: 'Persona di contatto', email: 'E-mail',
+    epb_disclaimer: 'Solo consumo – EPB fuori ambito',
+    annual_consumption_title: 'Consumo e costi annuali',
+    energy_price: 'Prezzo dell\'energia', num_luminaires: 'Numero di apparecchi', power_per_luminaire: 'Potenza per apparecchio',
+    hours_per_day: 'Ore / giorno', days_per_week: 'Giorni / settimana',
+    hours: 'ore', days: 'giorni', pieces: 'pz',
+    weeks_per_year: 'Settimane/anno', factor: 'fattore',
+    total_power: 'Potenza totale', annual_consumption: 'Consumo annuale', annual_cost: 'Costo energetico / anno', co2_emission: 'Emissione di CO₂ (kg)',
+    update: 'Aggiorna', pdf_report: 'Rapporto PDF', preview: 'Anteprima', reset: 'Ripristina',
+    energy_label_explanation: 'Etichetta energetica basata su lm/W: A++ (>140), A+ (120-140), A (100-120), B (85-100), C (70-85), D (55-70), E (40-55), F (25-40), G (<25).',
+    pdf_info: 'Il rapporto PDF contiene tutti i dati del progetto e i calcoli.',
+    pdf_preview: 'Anteprima del rapporto PDF', close: 'Chiudi', download_pdf: 'Scarica PDF',
+    project_details: 'Dettagli del progetto', lighting_installation: 'Installazione di illuminazione', usage_pattern: 'Modello di utilizzo', annual_results: 'Risultati annuali',
+    generated_on: 'Generato il', energy_label: 'Etichetta energetica', color_temperature: 'Temperatura di colore',
+    pdf_project: 'Progetto', pdf_address: 'Indirizzo', pdf_contact: 'Contatto', pdf_country: 'Paese',
+    pdf_building_type: 'Spazio', pdf_dimmable: 'Dimmerabile', pdf_luminaires: 'Numero di apparecchi', pdf_power: 'Potenza per apparecchio',
+    pdf_efficiency: 'Efficienza', pdf_color_temp: 'Temperatura di colore', pdf_label: 'Etichetta energetica', pdf_hours: 'Ore di funzionamento',
+    pdf_total_power: 'Potenza totale', pdf_consumption: 'Consumo elettrico', pdf_cost: 'Costo energetico',
+    pdf_co2: 'Emissione di CO₂', pdf_price: 'Prezzo dell\'energia', pdf_disclaimer: 'I dati EPB sono fuori ambito.',
+    language: 'Lingua', quick_presets: 'Preset rapidi',
+    led_premium: 'LED premium 150 lm/W | 5000K', led_standard: 'LED standard 120 lm/W | 4000K',
+    tl: 'TL 90 lm/W | 3000K', cfl: 'CFL 60 lm/W | 2700K', halogen: 'Alogeno 20 lm/W | 2700K',
+    currency: 'Valuta', yes: 'sì', no: 'no', smart: 'intelligente'
+  }
+};
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+const COUNTRIES = {
+  'Belgium':      [0.32, '€', '🇧🇪 Belgium'],
+  'Netherlands':  [0.35, '€', '🇳🇱 Netherlands'],
+  'Germany':      [0.38, '€', '🇩🇪 Germany'],
+  'France':       [0.28, '€', '🇫🇷 France'],
+  'UK':           [0.30, '£', '🇬🇧 United Kingdom'],
+  'USA':          [0.15, '$', '🇺🇸 USA'],
+  'Spain':        [0.24, '€', '🇪🇸 Spain'],
+  'Italy':        [0.31, '€', '🇮🇹 Italy'],
+  'Sweden':       [1.20, 'SEK', '🇸🇪 Sweden'],
+  'Canada':       [0.17, 'CAD', '🇨🇦 Canada'],
+  'Australia':    [0.28, 'AUD', '🇦🇺 Australia'],
+  'Japan':        [29.0, 'JPY', '🇯🇵 Japan'],
+  'China':        [0.52, 'CNY', '🇨🇳 China'],
+  'SouthAfrica':  [2.20, 'ZAR', '🇿🇦 South Africa']
+};
+
+const ENERGY_LABELS = [
+  [140, 'A++', '#009688'],
+  [120, 'A+',  '#4CAF50'],
+  [100, 'A',   '#8BC34A'],
+  [85,  'B',   '#CDDC39'],
+  [70,  'C',   '#FFC107'],
+  [55,  'D',   '#FF9800'],
+  [40,  'E',   '#FF5722'],
+  [25,  'F',   '#F44336'],
+  [0,   'G',   '#9C27B0']
+];
+
+const LANGUAGES = [
+  ['en', 'EN'], ['nl', 'NL'], ['de', 'DE'], ['fr', 'FR'], ['es', 'ES'],
+  ['pt', 'PT'], ['no', 'NO'], ['sv', 'SV'], ['it', 'IT']
+];
+
+const PRESETS = [
+  { lmw: 150, kelvin: 5000, key: 'led_premium' },
+  { lmw: 120, kelvin: 4000, key: 'led_standard' },
+  { lmw: 90,  kelvin: 3000, key: 'tl' },
+  { lmw: 60,  kelvin: 2700, key: 'cfl' },
+  { lmw: 20,  kelvin: 2700, key: 'halogen' }
+];
+
+// ============================================================================
+// STATE
+// ============================================================================
+let currentLang = 'en';
+let activePreset = 0;
+let activeRoom = 'classroom';
+let currentKelvin = 5000;
+let currentLmw = 150;
+
+const $ = (id) => document.getElementById(id);
+
+// ============================================================================
+// INIT
+// ============================================================================
+function init() {
+  populateCountrySelect();
+  buildLangButtons();
+  buildRooms();
+  buildPresets();
+  bindEvents();
+  setLanguage('en');
+  applyRoom('classroom');
+}
+
+function populateCountrySelect() {
+  const sel = $('countrySelect');
+  sel.innerHTML = '';
+  Object.keys(COUNTRIES).forEach(key => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = COUNTRIES[key][2];
+    sel.appendChild(opt);
+  });
+}
+
+function buildLangButtons() {
+  const container = $('langButtons');
+  container.innerHTML = '';
+  LANGUAGES.forEach(([code, label]) => {
+    const btn = document.createElement('button');
+    btn.className = 'lang-btn';
+    btn.textContent = label;
+    btn.dataset.lang = code;
+    btn.addEventListener('click', () => setLanguage(code));
+    container.appendChild(btn);
+  });
+}
+
+function buildRooms() {
+  const container = $('roomsContainer');
+  container.innerHTML = '';
+  SCHOOL_ROOMS.forEach(room => {
+    const btn = document.createElement('button');
+    btn.className = 'room-btn' + (room.id === activeRoom ? ' active' : '');
+    btn.dataset.room = room.id;
+    btn.innerHTML = `
+      <span class="room-icon">${room.icon}</span>
+      <span class="room-info">
+        <span class="room-name" data-room-name="${room.id}">${room.name.en}</span>
+        <span class="room-specs" data-room-specs="${room.id}">${room.specs.en}</span>
+      </span>
+    `;
+    btn.addEventListener('click', () => applyRoom(room.id));
+    container.appendChild(btn);
+  });
+}
+
+function buildPresets() {
+  const container = $('presetsContainer');
+  container.innerHTML = '';
+  PRESETS.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn' + (i === activePreset ? ' active' : '');
+    btn.dataset.index = i;
+    btn.addEventListener('click', () => setLumenWatt(p.lmw, p.kelvin, i));
+    container.appendChild(btn);
+  });
+}
+
+function applyRoom(roomId) {
+  const room = SCHOOL_ROOMS.find(r => r.id === roomId);
+  if (!room) return;
+  activeRoom = roomId;
+
+  document.querySelectorAll('.room-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.room === roomId);
+  });
+
+  $('numLuminaires').value = room.values.num;
+  $('powerPerLuminaire').value = room.values.power;
+  $('hoursPerDay').value = room.values.hours;
+  $('daysPerWeek').value = room.values.days;
+
+  const roomName = room.name[currentLang] || room.name.en;
+  $('hBuilding').textContent = roomName.replace(/^[^\s]+\s/, '');
+
+  onSliderChange();
+}
+
+function updateRoomLabels() {
+  const t = TRANSLATIONS[currentLang];
+  SCHOOL_ROOMS.forEach(room => {
+    const nameEl = document.querySelector(`[data-room-name="${room.id}"]`);
+    const specsEl = document.querySelector(`[data-room-specs="${room.id}"]`);
+    if (nameEl && room.name[currentLang]) nameEl.textContent = room.name[currentLang];
+    if (specsEl && room.specs[currentLang]) {
+      specsEl.textContent = room.specs[currentLang];
+    } else if (specsEl) {
+      specsEl.textContent = room.specs.en;
+    }
+  });
+  $('roomsHeader').textContent = t.rooms_header;
+}
+
+// ============================================================================
+// EVENT BINDING
+// ============================================================================
+function bindEvents() {
+  $('projectName').addEventListener('input', updateHeaderInfo);
+  $('addressName').addEventListener('input', updateHeaderInfo);
+  $('contactPerson').addEventListener('input', () => {});
+  $('contactEmail').addEventListener('input', () => {});
+  $('countrySelect').addEventListener('change', onCountryChange);
+
+  document.querySelectorAll('input[name="dimmable"]').forEach(rb => {
+    rb.addEventListener('change', updateHeaderInfo);
+  });
+
+  $('currencySelect').addEventListener('change', calculate);
+  $('energyPrice').addEventListener('input', calculate);
+
+  ['numLuminaires', 'powerPerLuminaire', 'hoursPerDay', 'daysPerWeek'].forEach(id => {
+    $(id).addEventListener('input', onSliderChange);
+  });
+
+  $('btnUpdate').addEventListener('click', calculate);
+  $('btnPdf').addEventListener('click', generatePdf);
+  $('btnPreview').addEventListener('click', previewPdf);
+  $('btnReset').addEventListener('click', resetDefault);
+
+  $('btnCloseModal').addEventListener('click', () => $('previewModal').classList.remove('open'));
+  $('previewModal').addEventListener('click', (e) => {
+    if (e.target === $('previewModal')) $('previewModal').classList.remove('open');
+  });
+  $('btnDownloadModal').addEventListener('click', () => {
+    $('previewModal').classList.remove('open');
+    generatePdf();
+  });
+}
+
+// ============================================================================
+// LANGUAGE
+// ============================================================================
+function setLanguage(lang) {
+  currentLang = lang;
+  const t = TRANSLATIONS[lang];
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  $('appTitle').innerHTML = t.app_title + ' <span class="school-badge">School</span>';
+  $('appSubtitle').textContent = t.subtitle;
+  $('hProjectLabel').textContent = t.project + ':';
+  $('hAddressLabel').textContent = t.address + ':';
+  $('hBuildingLabel').textContent = t.building_type + ':';
+  $('hDimmableLabel').textContent = t.dimmable + ':';
+
+  $('secGeneralInfo').textContent = t.general_info;
+  $('secDimmable').textContent = t.dimmable_title;
+  $('secContact').textContent = t.contact;
+
+  $('lblProjectName').textContent = t.project_name;
+  $('lblAddress').textContent = t.address_label;
+  $('lblCountry').textContent = t.country;
+  $('lblContactPerson').textContent = t.contact_person;
+  $('lblEmail').textContent = t.email;
+
+  $('dimYesLabel').textContent = t.dimmable_yes;
+  $('dimNoLabel').textContent = t.dimmable_no;
+  $('dimSmartLabel').textContent = t.dimmable_smart;
+
+  $('epbDisclaimer').textContent = '🌿 ' + t.epb_disclaimer;
+  $('mainTitle').textContent = t.annual_consumption_title;
+  $('presetsLabel').textContent = t.quick_presets + ':';
+
+  document.querySelectorAll('.preset-btn').forEach((btn, i) => {
+    btn.textContent = t[PRESETS[i].key];
+  });
+
+  $('priceTitle').textContent = '💶 ' + t.energy_price;
+  $('lblNumLuminaires').textContent = t.num_luminaires;
+  $('lblPowerPerLuminaire').textContent = t.power_per_luminaire;
+  $('lblHoursPerDay').textContent = t.hours_per_day;
+  $('lblDaysPerWeek').textContent = t.days_per_week;
+
+  $('weeksLabel').textContent = '📆 ' + t.weeks_per_year + ': 52';
+  $('co2FactorLabel').textContent = '📊 CO₂ ' + t.factor + ': 0.5 kg/kWh';
+
+  $('resTotalPowerLabel').textContent = t.total_power;
+  $('resConsumptionLabel').textContent = t.annual_consumption;
+  $('resCostLabel').textContent = t.annual_cost;
+  $('resCo2Label').textContent = t.co2_emission;
+
+  $('btnUpdate').textContent = '🔄 ' + t.update;
+  $('btnPdf').textContent = '📄 ' + t.pdf_report;
+  $('btnPreview').textContent = '👁 ' + t.preview;
+  $('btnReset').textContent = '↺ ' + t.reset;
+
+  $('footnote1').textContent = '📏 ' + t.energy_label_explanation;
+  $('footnote2').textContent = '📄 ' + t.pdf_info;
+
+  updateRoomLabels();
+  updateHeaderInfo();
+  onSliderChange();
+
+  $('modalTitle').textContent = t.pdf_preview;
+}
+
+function updateHeaderInfo() {
+  const t = TRANSLATIONS[currentLang];
+
+  const projectVal = $('projectName').value.trim();
+  $('hProject').textContent = projectVal || '—';
+  $('hProject').className = 'value' + (projectVal ? '' : ' empty');
+
+  const addressVal = $('addressName').value.trim();
+  $('hAddress').textContent = addressVal || '—';
+  $('hAddress').className = 'value' + (addressVal ? '' : ' empty');
+
+  const room = SCHOOL_ROOMS.find(r => r.id === activeRoom);
+  if (room) {
+    const roomName = room.name[currentLang] || room.name.en;
+    $('hBuilding').textContent = roomName.replace(/^[^\s]+\s/, '');
+  }
+
+  const dim = document.querySelector('input[name="dimmable"]:checked').value;
+  const dimMap = { yes: 'dimmable_yes', no: 'dimmable_no', smart: 'dimmable_smart' };
+  const dimText = t[dimMap[dim]];
+  $('hDimmable').textContent = dimText.replace(/^[^\s]+\s/, '');
+
+  if (dim === 'yes') {
+    $('dimmableIcon').textContent = '🔆 ' + t.dimmable;
+  } else if (dim === 'smart') {
+    $('dimmableIcon').textContent = '📶 ' + t.smart;
+  } else {
+    $('dimmableIcon').textContent = '⭕ ' + t.dimmable_no;
+  }
+}
+
+// ============================================================================
+// SLIDER / PRESET
+// ============================================================================
+function onSliderChange() {
+  const t = TRANSLATIONS[currentLang];
+
+  const sliders = [
+    { id: 'numLuminaires', valId: 'valNumLuminaires', dispId: 'dispNumLuminaires', unit: 'pieces' },
+    { id: 'powerPerLuminaire', valId: 'valPowerPerLuminaire', dispId: 'dispPowerPerLuminaire', unit: 'W' },
+    { id: 'hoursPerDay', valId: 'valHoursPerDay', dispId: 'dispHoursPerDay', unit: 'hours' },
+    { id: 'daysPerWeek', valId: 'valDaysPerWeek', dispId: 'dispDaysPerWeek', unit: 'days' }
+  ];
+
+  sliders.forEach(s => {
+    const val = parseInt($(s.id).value);
+    $(s.valId).textContent = val;
+    const unitText = (s.unit === 'W') ? 'W' : (t[s.unit] || s.unit);
+    $(s.dispId).textContent = val + ' ' + unitText;
+  });
+
+  calculate();
+}
+
+function setLumenWatt(lmw, kelvin, index) {
+  const defaultFlux = 3600;
+  let newPower = Math.round(defaultFlux / lmw);
+  newPower = Math.max(5, Math.min(200, newPower));
+
+  $('powerPerLuminaire').value = newPower;
+  currentLmw = lmw;
+  currentKelvin = kelvin;
+
+  activePreset = index;
+  document.querySelectorAll('.preset-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+
+  onSliderChange();
+}
+
+function onCountryChange() {
+  const key = $('countrySelect').value;
+  const [price, currency] = COUNTRIES[key];
+  $('energyPrice').value = price;
+  $('currencySelect').value = currency;
+  calculate();
+}
+
+// ============================================================================
+// CALCULATIONS
+// ============================================================================
+function calculate() {
+  const num = parseInt($('numLuminaires').value) || 0;
+  const power = parseInt($('powerPerLuminaire').value) || 0;
+  const hours = parseInt($('hoursPerDay').value) || 0;
+  const days = parseInt($('daysPerWeek').value) || 0;
+  const weeks = 52;
+
+  const totalPowerKw = (num * power) / 1000;
+  const yearlyHours = hours * days * weeks;
+  const kwh = totalPowerKw * yearlyHours;
+
+  let price = parseFloat($('energyPrice').value) || 0.32;
+  const cost = kwh * price;
+  const co2 = kwh * 0.5;
+
+  const fmt = (v) => {
+    let s = v < 1000 ? v.toFixed(2) : Math.round(v).toLocaleString('en-US');
+    if (['nl', 'de', 'fr', 'es', 'pt', 'it', 'no', 'sv'].includes(currentLang)) {
+      s = s.replace(/,/g, 'X').replace(/\./g, ',').replace(/X/g, '.');
+    }
+    return s;
+  };
+
+  $('resTotalPower').textContent = fmt(totalPowerKw);
+  $('resConsumption').textContent = fmt(Math.round(kwh));
+  $('resCost').textContent = fmt(Math.round(cost));
+  $('resCo2').textContent = fmt(Math.round(co2));
+
+  const currency = $('currencySelect').value;
+  $('resCostUnit').textContent = currency;
+
+  const defaultFlux = 3600;
+  const lmw = power > 0 ? Math.round(defaultFlux / power) : 0;
+
+  $('lmwDisplay').textContent = lmw + ' lm/W';
+  $('kelvinDisplay').textContent = currentKelvin + ' K';
+
+  for (const [threshold, label, color] of ENERGY_LABELS) {
+    if (lmw >= threshold) {
+      $('labelPill').textContent = label;
+      $('labelPill').style.background = color;
+      break;
+    }
+  }
+}
+
+// ============================================================================
+// RESET
+// ============================================================================
+function resetDefault() {
+  $('projectName').value = 'Janssens';
+  $('addressName').value = '';
+  $('contactPerson').value = '';
+  $('contactEmail').value = '';
+  $('countrySelect').value = 'Belgium';
+  document.querySelector('input[name="dimmable"][value="yes"]').checked = true;
+  $('energyPrice').value = 0.32;
+  $('currencySelect').value = '€';
+
+  applyRoom('classroom');
+  updateHeaderInfo();
+  calculate();
+}
+
+// ============================================================================
+// REPORT DATA
+// ============================================================================
+function getReportData() {
+  const t = TRANSLATIONS[currentLang];
+  const room = SCHOOL_ROOMS.find(r => r.id === activeRoom);
+  const roomText = room ? (room.name[currentLang] || room.name.en) : '—';
+
+  const country = $('countrySelect').value;
+  const dim = document.querySelector('input[name="dimmable"]:checked').value;
+  const dimMap = { yes: 'dimmable_yes', no: 'dimmable_no', smart: 'dimmable_smart' };
+  const dimText = t[dimMap[dim]];
+
+  return {
+    appTitle: t.app_title,
+    generatedOn: new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+    project: $('projectName').value || '—',
+    address: $('addressName').value || '—',
+    contact: ($('contactPerson').value || '') + ($('contactEmail').value ? ' (' + $('contactEmail').value + ')' : ''),
+    country: country,
+    buildingType: roomText,
+    dimmable: dimText,
+    numLuminaires: $('numLuminaires').value,
+    power: $('powerPerLuminaire').value,
+    lmw: $('lmwDisplay').textContent,
+    kelvin: $('kelvinDisplay').textContent,
+    energyLabel: $('labelPill').textContent,
+    hours: $('hoursPerDay').value,
+    days: $('daysPerWeek').value,
+    totalPower: $('resTotalPower').textContent,
+    consumption: $('resConsumption').textContent,
+    cost: $('resCost').textContent,
+    currency: $('currencySelect').value,
+    co2: $('resCo2').textContent,
+    price: $('energyPrice').value,
+    t: t
+  };
+}
+
+// ============================================================================
+// PREVIEW MODAL
+// ============================================================================
+function previewPdf() {
+  const data = getReportData();
+  const t = data.t;
+
+  $('modalDate').textContent = t.generated_on + ': ' + data.generatedOn;
+
+  let html = '';
+  const addSection = (title) => { html += '<div class="modal-section-title">' + title + '</div>'; };
+  const addRow = (label, value) => {
+    html += '<div class="modal-row"><span class="label">' + label + '</span><span class="value">' + value + '</span></div>';
+  };
+
+  addSection('📋 ' + t.project_details);
+  addRow(t.pdf_project, data.project);
+  addRow(t.pdf_address, data.address);
+  if (data.contact) addRow(t.pdf_contact, data.contact);
+  addRow(t.pdf_country, data.country);
+  addRow(t.pdf_building_type, data.buildingType);
+  addRow(t.pdf_dimmable, data.dimmable);
+
+  addSection('💡 ' + t.lighting_installation);
+  addRow(t.pdf_luminaires, data.numLuminaires + ' ' + t.pieces);
+  addRow(t.pdf_power, data.power + ' W');
+  addRow(t.pdf_efficiency, data.lmw);
+  addRow(t.pdf_color_temp, data.kelvin);
+  addRow(t.pdf_label, data.energyLabel);
+
+  addSection('⏱️ ' + t.usage_pattern);
+  addRow(t.pdf_hours, data.hours + ' h/day, ' + data.days + ' days/week, 52 weeks/year');
+
+  addSection('📊 ' + t.annual_results);
+  addRow(t.pdf_total_power, data.totalPower + ' kW');
+  addRow(t.pdf_consumption, data.consumption + ' kWh');
+  addRow(t.pdf_cost, data.cost + ' ' + data.currency);
+  addRow(t.pdf_co2, data.co2 + ' kg');
+  addRow(t.pdf_price, data.price + ' ' + data.currency + '/kWh');
+
+  html += '<p style="margin-top:15px;font-size:12px;color:#999;font-style:italic;">' + t.pdf_disclaimer + '</p>';
+
+  $('modalBody').innerHTML = html;
+  $('previewModal').classList.add('open');
+}
+
+// ============================================================================
+// PDF GENERATION
+// ============================================================================
+function generatePdf() {
+  const data = getReportData();
+  const t = data.t;
+
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    alert('Please allow pop-ups to generate the PDF report.');
+    return;
+  }
+
+  let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${data.appTitle} - Report</title>
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 30px; color: #0B2B40; }
+        h1 { color: #0B2B40; font-size: 26px; margin-bottom: 5px; }
+        .subtitle { color: #666; font-size: 13px; margin-bottom: 25px; }
+        h2 { color: #0B2B40; font-size: 16px; margin-top: 25px; margin-bottom: 10px; border-bottom: 2px solid #0B2B40; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        td { padding: 6px 10px; border-bottom: 1px solid #E0E0E0; font-size: 13px; }
+        td:first-child { color: #666; width: 40%; }
+        td:last-child { font-weight: 600; }
+        .disclaimer { margin-top: 30px; font-size: 11px; color: #999; font-style: italic; }
+        @media print { body { margin: 15mm; } }
+      </style>
+    </head>
+    <body>
+      <h1>${data.appTitle} — School Edition</h1>
+      <div class="subtitle">${t.generated_on}: ${data.generatedOn}</div>
+  `;
+
+  const addSection = (title) => { html += `<h2>${title}</h2><table>`; };
+  const addRow = (label, value) => { html += `<tr><td>${label}</td><td>${value}</td></tr>`; };
+  const closeTable = () => { html += '</table>'; };
+
+  addSection('📋 ' + t.project_details);
+  addRow(t.pdf_project, data.project);
+  addRow(t.pdf_address, data.address);
+  if (data.contact) addRow(t.pdf_contact, data.contact);
+  addRow(t.pdf_country, data.country);
+  addRow(t.pdf_building_type, data.buildingType);
+  addRow(t.pdf_dimmable, data.dimmable);
+  closeTable();
+
+  addSection('💡 ' + t.lighting_installation);
+  addRow(t.pdf_luminaires, data.numLuminaires + ' ' + t.pieces);
+  addRow(t.pdf_power, data.power + ' W');
+  addRow(t.pdf_efficiency, data.lmw);
+  addRow(t.pdf_color_temp, data.kelvin);
+  addRow(t.pdf_label, data.energyLabel);
+  closeTable();
+
+  addSection('⏱️ ' + t.usage_pattern);
+  addRow(t.pdf_hours, data.hours + ' h/day, ' + data.days + ' days/week, 52 weeks/year');
+  closeTable();
+
+  addSection('📊 ' + t.annual_results);
+  addRow(t.pdf_total_power, data.totalPower + ' kW');
+  addRow(t.pdf_consumption, data.consumption + ' kWh');
+  addRow(t.pdf_cost, data.cost + ' ' + data.currency);
+  addRow(t.pdf_co2, data.co2 + ' kg');
+  addRow(t.pdf_price, data.price + ' ' + data.currency + '/kWh');
+  closeTable();
+
+  html += `<div class="disclaimer">${t.pdf_disclaimer}</div>`;
+  html += '</body></html>';
+
+  printWindow.document.write(html);
+  printWindow.document.close();
+
+  setTimeout(() => { printWindow.print(); }, 500);
+}
+
+// ============================================================================
+// SERVICE WORKER
+// ============================================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(function(reg) { console.log('✅ SW registered:', reg.scope); })
+      .catch(function(err) { console.log('⚠️ SW failed:', err.message); });
+  });
+}
+
+// ============================================================================
+// START
+// ============================================================================
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
