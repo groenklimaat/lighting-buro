@@ -1,19 +1,20 @@
 {
-  "id": "lightingburo-pwa-v1",
-  "name": "LightingBuro - Lighting Calculator",
-  "short_name": "LightingBuro",
-  "description": "Lighting calculator for homes, schools & apartments",
-  "start_url": "./",
+  "name": "Solar Panel Calculator",
+  "short_name": "SolarCalc",
+  "description": "Calculate solar panel power, yield and CO2 savings. Supports 13 languages.",
+  "start_url": "/Solar-Calculator/index.html",
+  "scope": "/Solar-Calculator/",
   "display": "standalone",
-  "background_color": "#F1F5F9",
+  "background_color": "#0B2B40",
   "theme_color": "#0B2B40",
   "orientation": "any",
   "lang": "en",
-  "categories": ["utilities", "productivity", "education"],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
